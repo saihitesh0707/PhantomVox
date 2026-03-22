@@ -290,20 +290,47 @@
     let callInterval;
     let callSeconds = 0;
 
-    function showFakeCall() {
-      showScreen('call-screen');
-      document.getElementById('call-timer').textContent = 'Ringing...';
-      callSeconds = 0;
-      setTimeout(() => {
-        document.getElementById('call-timer').textContent = '00:00';
-        callInterval = setInterval(() => {
-          callSeconds++;
-          const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-          const s = String(callSeconds % 60).padStart(2, '0');
-          document.getElementById('call-timer').textContent = `${m}:${s}`;
-        }, 1000);
-      }, 2000);
-    }
+   function showHome() { 
+  showScreen('home-screen'); 
+  clearInterval(callInterval);
+  clearInterval(ringInterval);
+}
+  
+  // Ringtone using Web Audio API
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  function ring() {
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.value = 440;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+  }
+
+  // Ring pattern — 2 rings then pause
+  ring();
+  setTimeout(ring, 600);
+  ringInterval = setInterval(() => {
+    ring();
+    setTimeout(ring, 600);
+  }, 2000);
+
+  callSeconds = 0;
+  setTimeout(() => {
+    document.getElementById('call-timer').textContent = '00:00';
+    callInterval = setInterval(() => {
+      callSeconds++;
+      const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+      const s = String(callSeconds % 60).padStart(2, '0');
+      document.getElementById('call-timer').textContent = `${m}:${s}`;
+    }, 1000);
+  }, 2000);
+}
+  
 
     function answerCall() {
       document.querySelector('.call-status').textContent = 'Connected';
